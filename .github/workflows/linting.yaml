@@ -1,0 +1,33 @@
+name: Rust Linting Check
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+  push:
+    branches: [all]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  lint:
+    name: Code Formatting & Clippy Lints
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+
+      - name: Enable Rust caching
+        uses: Swatinem/rust-cache@v2
+
+      - name: Check formatting (rustfmt)
+        run: cargo fmt --check
+
+      - name: Run linter (clippy)
+        run: cargo clippy --all-targets --all-features -- -D warnings
