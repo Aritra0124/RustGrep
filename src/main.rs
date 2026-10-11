@@ -1,12 +1,7 @@
 use anyhow::Error;
 use std::fs;
+use std::env::args;
 
-/// While using `&[&str]` to handle flags is convenient for exercise purposes,
-/// and resembles the output of [`std::env::args`], in real-world projects it is
-/// both more convenient and more idiomatic to contain runtime configuration in
-/// a dedicated struct. Therefore, we suggest that you do so in this exercise.
-///
-/// [`std::env::args`]: https://doc.rust-lang.org/std/env/fn.args.html
 #[derive(Debug, Default)]
 pub struct Flags{
     pub n: bool,
@@ -17,7 +12,7 @@ pub struct Flags{
 }
 
 impl Flags {
-    pub fn new(flags: &[&str]) -> Self {
+    pub fn new(flags: &[String]) -> Self {
         let mut parameter = Flags::default();
         for flag in flags{
             match flag.trim_start_matches("-"){
@@ -34,11 +29,13 @@ impl Flags {
 }
 
 pub fn grep(pattern: &str, flags: &Flags, files: &[&str]) -> Result<Vec<String>, Error> {
+    println!("{:?}", pattern);
     let mut pos = Vec::new();
     let multiple_files_flag = files.len() > 1;
-
     for filename in files.iter(){
         let contents = fs::read_to_string(filename)?;
+        println!("{:?}", contents);
+        println!("{:?}", contents.contains(pattern));
         if  (contents.contains(pattern) && !flags.i) ||
             (contents.to_lowercase().contains(&pattern.to_lowercase()) && flags.i) ||
             (!contents.contains(pattern) && flags.v)
@@ -91,6 +88,12 @@ pub fn grep(pattern: &str, flags: &Flags, files: &[&str]) -> Result<Vec<String>,
     Ok(pos)
 }
 
-pub fn main(){
-
+pub fn main() {
+    let arg_input: Vec<String> = args().collect();
+    let filename = &arg_input[1];
+    let pattern = &arg_input[2];
+    if arg_input.len() > 1 {
+        println!("arguments : {:?}", &arg_input[3..]);
+    }
+    println!("{:?}",grep(&pattern, &Flags::new(&arg_input[3..]), &[filename]).expect("File not found"));
 }
